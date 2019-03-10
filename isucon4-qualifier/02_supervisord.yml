@@ -1,9 +1,19 @@
 ---
 - hosts: all
-  sudo: yes
+  become: yes
   tasks:
     - yum: name=python-setuptools
-    - easy_install: name=supervisor
+
+    - name: install supervisord
+      ignore_errors: yes
+      easy_install:
+        name: supervisor
+      register: supervisor_result
+
+    - name: fallback in case of failure (see https://github.com/ansible/ansible/issues/23534)
+      command: easy_install supervisor
+      when: supervisor_result.failed == true
+
     - shell: |
         cp /tmp/isucon4/qualifier/ami/files/supervisord.init /etc/init.d/supervisord
         chmod a+x /etc/init.d/supervisord
