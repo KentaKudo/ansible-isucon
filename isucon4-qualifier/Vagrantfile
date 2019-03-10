@@ -1,0 +1,19 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+API_VERSION   = "2"
+BOX_NAME      = "bento/centos-6.7"
+MEMORY_SIZE   = "2048"
+PLAYBOOK_PATH = "playbook.yml"
+
+Vagrant.configure(API_VERSION) do |config|
+    config.vm.box = BOX_NAME
+
+    config.vm.provider "virtualbox" do |v|
+        v.memory = MEMORY_SIZE
+    end
+
+    config.vm.provision "ansible_local" do |ansible|
+        ansible.playbook = PLAYBOOK_PATH
+    end
+end

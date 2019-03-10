@@ -27,6 +27,11 @@ cd ansible-isucon/isucon4-qualifier
 ansible-playbook -i local playbook.yml
 ```
 
+Vagrant:
+```
+$ vagrant up
+```
+
 ## 本来の設定と異なるところ
 
 - MySQLのバージョンを5.5.42からMySQL GA最新版(現在は5.6系)に変更しています

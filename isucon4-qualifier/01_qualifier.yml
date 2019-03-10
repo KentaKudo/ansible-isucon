@@ -1,52 +1,131 @@
 ---
 - hosts: all
-  sudo: yes
+  become: yes
   tasks:
-    - user: name=isucon groups=wheel
-    - lineinfile: dest=/etc/sudoers state=present regexp='^%wheel ALL\=' line='%wheel ALL=(ALL) NOPASSWD:ALL' validate='visudo -cf %s'
-    - command: yum update -y
-    - yum: pkg=http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm
-    - yum: pkg=nginx state=installed
-    - service: name=nginx enabled=true
-    - yum: pkg=mysql-community-server state=installed
-    - service: name=mysqld state=running enabled=true
-    - yum: pkg=MySQL-python state=installed
-    - yum: pkg=git state=installed
-    - git: repo=https://github.com/isucon/isucon4.git dest=/tmp/isucon4
-    - shell: cp /tmp/isucon4/qualifier/ami/files/nginx.conf /etc/nginx/nginx.conf
+    - name: create an isucon user
+      user: name=isucon groups=wheel
+
+    - name: add the isucon user as a sudoer
+      lineinfile:
+        dest: "/etc/sudoers"
+        state: "present"
+        regexp: '^%wheel ALL\='
+        line: '%wheel ALL=(ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
+
+    - name: update packages
+      yum:
+        name: "*"
+        state: "latest"
+
+    - name: install repo packages
+      yum:
+        name: "{{ packages }}"
+        state: "installed"
+      vars:
+        packages:
+          - "http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm"
+
+    - name: install packages
+      yum:
+        name: "{{ packages }}"
+        state: "installed"
+      vars:
+        packages:
+          - "nginx"
+          - "mysql-community-server"
+          - "MySQL-python"
+          - "git"
+    
+    - name: start nginx
+      service:
+        name: "nginx"
+        state: "started"
+        enabled: true
+    
+    - name: start mysql
+      service:
+        name: "mysqld"
+        state: "started"
+        enabled: true
+    
+    - name: clone the repository
+      git:
+        repo: "https://github.com/isucon/isucon4.git"
+        dest: "/tmp/isucon4"
+
+    - name: copy the nginx.conf file
+      shell: cp /tmp/isucon4/qualifier/ami/files/nginx.conf /etc/nginx/nginx.conf
       notify:
         - reload nginx
-    - shell: cp /tmp/isucon4/qualifier/ami/files/nginx.php.conf /etc/nginx/nginx.php.conf
+
+    - name: copy the nginx.php.conf file
+      shell: cp /tmp/isucon4/qualifier/ami/files/nginx.php.conf /etc/nginx/nginx.php.conf
+
     - name: copy my.cnf
       shell: cp /tmp/isucon4/qualifier/ami/files/my.cnf /etc/my.cnf
       notify:
         - restart mysqld
-    - command: rm -rf /tmp/isucon
+
+    - name: remove the /tmp/isucon/ directory
+      command: rm -rf /tmp/isucon
       args:
         removes: /tmp/isucon
-    - file: path=/tmp/isucon state=directory 
-    - shell: rsync -a /tmp/isucon4/qualifier/sql /tmp/isucon/
-    - shell: rsync -a /tmp/isucon4/qualifier/webapp /tmp/isucon/
-    - shell: |
+
+    - name: create /tmp/isucon/ directory
+      file:
+        path: "/tmp/isucon"
+        state: "directory"
+
+    - name: copy the sql files in /tmp/isucon/
+      shell: rsync -a /tmp/isucon4/qualifier/sql /tmp/isucon/
+
+    - name: copy the webapp directory in /tmp/isucon/
+      shell: rsync -a /tmp/isucon4/qualifier/webapp /tmp/isucon/
+
+    - name: copy the init.sh file in /tmp/isucon/
+      shell: |
         cp /tmp/isucon4/qualifier/init.sh /tmp/isucon/init.sh
         chmod a+x /tmp/isucon/init.sh
-    - shell: |
+
+    - name: copy the env.sh file in /tmp/isucon/
+      shell: |
         cp /tmp/isucon4/qualifier/ami/files/env.sh /tmp/isucon/env.sh
         chmod a+x /tmp/isucon/env.sh
-    - shell: |
+
+    - name: copy the bashrc file in /home/isucon/
+      shell: |
         cp /tmp/isucon4/qualifier/ami/files/bashrc /home/isucon/.bashrc
         chmod a+x /home/isucon/.bashrc
-    - command: chown -R isucon:isucon /tmp/isucon
-    - command: rsync -avz --delete --exclude-from=/tmp/isucon4/qualifier/ami/files/rsync_exclude.txt /tmp/isucon/ /home/isucon/
+
+    - name: change the ownership of /tmp/isucon/
+      command: chown -R isucon:isucon /tmp/isucon
+
+    - name: copy the /tmp/isucon/ into /home/isucon/
+      command: rsync -avz --delete --exclude-from=/tmp/isucon4/qualifier/ami/files/rsync_exclude.txt /tmp/isucon/ /home/isucon/
       sudo: yes
+
   post_tasks:
-    - command: ./init.sh
+    - name: run init.sh
+      command: ./init.sh
       sudo_user: isucon
       args:
         chdir: /home/isucon
-    - mysql_user: name=isucon password=isucon priv=*.*:ALL state=present
+
+    - name: create an isucon MySQL user
+      mysql_user:
+        name: "isucon"
+        password: "isucon"
+        priv: "*.*:ALL"
+        state: "present"
+
   handlers:
     - name: restart mysqld
-      action: service name=mysqld state=restarted
+      service:
+        name: "mysqld"
+        state: "restarted"
+
     - name: reload nginx
-      action: service name=nginx state=restarted
+      service:
+        name: "nginx"
+        state: "restarted"

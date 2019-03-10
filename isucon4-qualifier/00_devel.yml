@@ -1,41 +1,48 @@
 ---
 - hosts: all
   become: yes
-  vars:
-    packages:
-      - "epel-release"
-      - "libselinux-python"
-      - "python-meld3"
-      - "rubygems"
-      - "git"
-      - "gcc"
-      - "patch"
-      - "openssl-devel"
-      - "http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm"
-      - "mysql-community-devel"
-      - "libcurl"
-      - "libcurl-devel"
-      - "bison"
-      - "bison-devel"
-      - "libjpeg-turbo"
-      - "libjpeg-turbo-devel"
-      - "libpng"
-      - "libpng-devel"
-      - "libmcrypt"
-      - "libmcrypt-devel"
-      - "readline"
-      - "readline-devel"
-      - "libtidy"
-      - "libtidy-devel"
-      - "autoconf"
-      - "automake"
-      - "libxml2-devel"
-      - "libxslt-devel"
   tasks:
+    - name: install repo packages
+      yum:
+        name: "{{ packages }}"
+        state: "installed"
+      vars:
+        packages:
+          - "epel-release"
+          - "http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm"
+
     - name: install packages
       yum:
         name: "{{ packages }}"
         state: "installed"
+      vars:
+        packages:
+          - "libselinux-python"
+          - "python-meld3"
+          - "rubygems"
+          - "git"
+          - "gcc"
+          - "patch"
+          - "openssl-devel"
+          - "mysql-community-devel"
+          - "libcurl"
+          - "libcurl-devel"
+          - "bison"
+          - "bison-devel"
+          - "libjpeg-turbo"
+          - "libjpeg-turbo-devel"
+          - "libpng"
+          - "libpng-devel"
+          - "libmcrypt"
+          - "libmcrypt-devel"
+          - "readline"
+          - "readline-devel"
+          - "libtidy"
+          - "libtidy-devel"
+          - "autoconf"
+          - "automake"
+          - "libxml2-devel"
+          - "libxslt-devel"
 
     - name: disable SELinux
       selinux: state=disabled
