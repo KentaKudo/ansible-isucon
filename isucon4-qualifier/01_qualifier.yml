@@ -3,7 +3,9 @@
   become: yes
   tasks:
     - name: create an isucon user
-      user: name=isucon groups=wheel
+      user:
+        name: "isucon"
+        groups: "wheel"
 
     - name: add the isucon user as a sudoer
       lineinfile:

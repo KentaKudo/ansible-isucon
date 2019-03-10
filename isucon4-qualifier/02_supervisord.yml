@@ -2,7 +2,9 @@
 - hosts: all
   become: yes
   tasks:
-    - yum: name=python-setuptools
+    - name: install packages
+      yum:
+        name: "python-setuptools"
 
     - name: install supervisord
       ignore_errors: yes
@@ -14,13 +16,24 @@
       command: easy_install supervisor
       when: supervisor_result.failed == true
 
-    - shell: |
+    - name: copy supervisord init
+      shell: |
         cp /tmp/isucon4/qualifier/ami/files/supervisord.init /etc/init.d/supervisord
         chmod a+x /etc/init.d/supervisord
-    - service: name=supervisord enabled=true
-    - shell: cp /tmp/isucon4/qualifier/ami/files/supervisord.conf /etc/supervisord.conf
+
+    - name: start supervisord
+      service:
+        name: "supervisord"
+        state: "started"
+        enabled: true
+
+    - name: copy supervisord configuration
+      shell: cp /tmp/isucon4/qualifier/ami/files/supervisord.conf /etc/supervisord.conf
       notify:
         - restart supervisord
+
   handlers:
     - name: restart supervisord
-      action: service name=supervisord state=restarted
+      service:
+        name: "supervisord"
+        state: "restarted"
