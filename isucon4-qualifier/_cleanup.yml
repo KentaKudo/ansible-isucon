@@ -1,29 +1,74 @@
 ---
-- hosts: all
-  sudo: yes
-  tasks:
-    - file: path=/tmp/benchmarker state=absent
-    - file: path=/tmp/isucon state=absent
-    - file: path=/tmp/isucon4 state=absent
-    - shell: rm -rf /var/log/nginx/*.log
-      args:
-        removes: /var/log/nginx/access.log
-    - file: path=/var/log/mysqld.log state=absent
-    - file: path=/home/ec2-user/.ansible state=absent
-    - file: path=/home/ec2-user/.bash_history state=absent
-    - file: path=/home/ec2-user/.viminfo state=absent
-    - file: path=/home/isucon/.mysql_history state=absent
-    - file: path=/home/isucon/.bash_history state=absent
 
-    - shell: rm -r /home/isucon/sql/*.old
+# TODO
+# - replace rm *. with find -> file state=absent
+
+- hosts: all
+  become: yes 
+  tasks:
+    - name: remove benchmarker
+      file:
+        path: "/tmp/benchmarker"
+        state: "absent"
+
+    - name: remove directories under /tmp/
+      file:
+        path: "{{ item }}"
+        state: "absent"
+      with_items:
+        - "/tmp/isucon/"
+        - "/tmp/isucon4/"
+      
+    - name: find nginx log files
+      find:
+        path: "/var/log/nginx/"
+        patterns: "*.log"
+      register: "nginx_log_files"
+
+    - name: remove nginx logs
+      file:
+        path: "{{ item.path }}"
+        state: "absent"
+      with_items: "{{ nginx_log_files.files }}"
+
+    - name: remove a mysql log
+      file:
+        path: "/var/log/mysqld.log"
+        state: "absent"
+
+    - name: remove files in /home/ec2-user/
+      file:
+        path: "/home/ec2-user/{{ item }}"
+        state: "absent"
+      with_items:
+        - ".ansible"
+        - "/viminfo"
+
+    - name: remove files in /home/isucon/
+      file:
+        path: "/home/isucon/{{ item }}"
+        state: "absent"
+      with_items:
+        - ".mysql_history"
+        - ".bash_history"
+
+    - name: remove sql *.old files
+      shell: rm -r /home/isucon/sql/*.old
       args:
         removes: /home/isucon/sql/dummy_users_used.tsv.old
 
-    - shell: rm -r /home/isucon/sql/*.rb
+    - name: remove sql *.rb files
+      shell: rm -r /home/isucon/sql/*.rb
       args:
         removes: /home/isucon/sql/generate_users.rb
 
-    - shell: find /home/isucon/webapp -maxdepth 2 -name 'README.*' -delete
+    - name: remove README files
+      shell: find /home/isucon/webapp -maxdepth 2 -name 'README.*' -delete
 
-    - file: path=/home/isucon/php/nginx.local.conf state=absent
-    - file: path=/home/isucon/php/Procfile state=absent
+    - name: remove php related files
+      file:
+        path: "/home/isucon/php/{{ item }}"
+        state: "absent"
+      with_items:
+        - "nginx.local.conf"
+        - "Procfile"
