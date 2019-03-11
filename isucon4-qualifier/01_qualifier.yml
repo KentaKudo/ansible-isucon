@@ -83,22 +83,27 @@
         group: "isucon"
 
     - name: copy the sql files in /tmp/isucon/
+      become_user: "isucon"
       shell: rsync -a /tmp/isucon4/qualifier/sql /tmp/isucon/
 
     - name: copy the webapp directory in /tmp/isucon/
+      become_user: "isucon"
       shell: rsync -a /tmp/isucon4/qualifier/webapp /tmp/isucon/
 
     - name: copy the init.sh file in /tmp/isucon/
+      become_user: "isucon"
       shell: |
         cp /tmp/isucon4/qualifier/init.sh /tmp/isucon/init.sh
         chmod a+x /tmp/isucon/init.sh
 
     - name: copy the env.sh file in /tmp/isucon/
+      become_user: "isucon"
       shell: |
         cp /tmp/isucon4/qualifier/ami/files/env.sh /tmp/isucon/env.sh
         chmod a+x /tmp/isucon/env.sh
 
     - name: copy the bashrc file in /home/isucon/
+      become_user: "isucon"
       shell: |
         cp /tmp/isucon4/qualifier/ami/files/bashrc /home/isucon/.bashrc
         chmod a+x /home/isucon/.bashrc

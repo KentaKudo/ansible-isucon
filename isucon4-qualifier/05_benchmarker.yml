@@ -1,31 +1,44 @@
 ---
 - hosts: all
-  sudo: yes
+  become: yes
   tasks:
     - name: remove the existing build file
-      command: rm -rf /tmp/benchmarker
-      args:
-        removes: /tmp/benchmarker
+      file:
+        path: "/tmp/benchmarker/"
+        state: "absent"
 
     - name: copy the benchmarker files
       shell: rsync -aL --delete /tmp/isucon4/qualifier/benchmarker /tmp/
 
-    - name: change the ownership if /tmp/benchmarker/
-      command: chown -R isucon:isucon /tmp/benchmarker
+    - name: change the ownership of /tmp/benchmarker/
+      file:
+        path: "/tmp/benchmarker/"
+        state: "directory"
+        owner: "isucon"
+        group: "isucon"
+        recurse: yes
 
     - name: edit the Makefile
-      lineinfile: dest=/tmp/benchmarker/Makefile state=present regexp='^GIT_COMMIT=.*' line='GIT_COMMIT=""'
+      lineinfile:
+        dest: "/tmp/benchmarker/Makefile"
+        state: "present"
+        regexp: '^GIT_COMMIT=.*'
+        line: 'GIT_COMMIT=""'
 
     - name: edit the main.go to ignore machine type
-      lineinfile: dest=/tmp/benchmarker/main.go state=present regexp='checkInstanceMetadata\(\)' line=''
+      lineinfile:
+        dest: "/tmp/benchmarker/main.go"
+        state: "present"
+        regexp: 'checkInstanceMetadata\(\)'
+        line: ''
 
     - name: build benchmarker
       command: /home/isucon/env.sh make release
-      sudo_user: isucon
+      become_user: isucon
       ignore_errors: yes
       args:
         chdir: /tmp/benchmarker
 
     - name: mv the build file to /home/isucon/
       command: mv /tmp/benchmarker/benchmarker /home/isucon/
-      sudo_user: isucon
+      become_user: isucon

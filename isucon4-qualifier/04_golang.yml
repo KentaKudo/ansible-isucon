@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  sudo: yes
+  become: yes
   tasks:
     - name: install packages
       yum:
@@ -37,5 +37,10 @@
       args:
         chdir: /home/isucon/webapp/go
 
-    - name: change the ownership of /home/isucon/gocode
-      command: chown -R isucon:isucon /home/isucon/gocode
+    - name: change the ownership of /home/isucon/gocode/
+      file:
+        path: "/home/isucon/gocode"
+        state: "directory"
+        owner: "isucon"
+        group: "isucon"
+        recurse: yes
