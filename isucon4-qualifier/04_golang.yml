@@ -1,6 +1,14 @@
 ---
+
 - hosts: all
   become: yes
+  vars:
+    go_version: "1.3"
+    gondler_version: "0.2.0"
+    isucon:
+      username: "isucon"
+      group: "isucon"
+
   tasks:
     - name: install packages
       yum:
@@ -12,23 +20,17 @@
           - "mercurial"
           - "bzr"
 
-    - name: download go
-      command: "curl -L -O  http://golang.org/dl/go1.3.linux-amd64.tar.gz"
-      args:
-        chdir: /tmp
-        creates: /usr/local/go
-
     - name: install go
-      command: "tar -C /usr/local -xzf go1.3.linux-amd64.tar.gz"
-      args:
-        chdir: /tmp
-        creates: /usr/local/go
+      unarchive:
+        src: "https://dl.google.com/go/go{{ go_version }}.linux-amd64.tar.gz"
+        dest: "/usr/local/"
+        remote_src: yes
 
     - name: copy the golang.sh file
       shell: cp /tmp/isucon4/qualifier/ami/files/golang.sh /etc/profile.d/golang.sh
 
     - name: gem install
-      command: "/usr/bin/gem install --no-rdoc --no-ri gondler -v 0.2.0"
+      command: "/usr/bin/gem install --no-rdoc --no-ri gondler -v {{ gondler_version }}"
       args:
         creates: /usr/local/bin/gondler
 
@@ -41,6 +43,6 @@
       file:
         path: "/home/isucon/gocode"
         state: "directory"
-        owner: "isucon"
-        group: "isucon"
+        owner: "{{ isucon.user }}"
+        group: "{{ isucon.group }}"
         recurse: yes
