@@ -43,6 +43,10 @@
           - "automake"
           - "libxml2-devel"
           - "libxslt-devel"
+          # for installing PHP
+          - "bzip2-devel"
+          - "libicu-devel"
+          - "gcc-c++"
 
     - name: disable SELinux
       selinux: state=disabled

@@ -1,4 +1,5 @@
 ---
+
 - hosts: all
   become: yes
   tasks:
@@ -70,14 +71,16 @@
         - restart mysqld
 
     - name: remove the /tmp/isucon/ directory
-      command: rm -rf /tmp/isucon
-      args:
-        removes: /tmp/isucon
+      file:
+        path: "/tmp/isucon/"
+        state: "absent"
 
     - name: create /tmp/isucon/ directory
       file:
         path: "/tmp/isucon"
         state: "directory"
+        owner: "isucon"
+        group: "isucon"
 
     - name: copy the sql files in /tmp/isucon/
       shell: rsync -a /tmp/isucon4/qualifier/sql /tmp/isucon/
@@ -100,17 +103,13 @@
         cp /tmp/isucon4/qualifier/ami/files/bashrc /home/isucon/.bashrc
         chmod a+x /home/isucon/.bashrc
 
-    - name: change the ownership of /tmp/isucon/
-      command: chown -R isucon:isucon /tmp/isucon
-
     - name: copy the /tmp/isucon/ into /home/isucon/
       command: rsync -avz --delete --exclude-from=/tmp/isucon4/qualifier/ami/files/rsync_exclude.txt /tmp/isucon/ /home/isucon/
-      sudo: yes
 
   post_tasks:
     - name: run init.sh
       command: ./init.sh
-      sudo_user: isucon
+      become_user: isucon
       args:
         chdir: /home/isucon
 

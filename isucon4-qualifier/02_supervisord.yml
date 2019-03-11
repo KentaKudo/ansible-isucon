@@ -21,10 +21,9 @@
         cp /tmp/isucon4/qualifier/ami/files/supervisord.init /etc/init.d/supervisord
         chmod a+x /etc/init.d/supervisord
 
-    - name: start supervisord
+    - name: enable supervisord service
       service:
         name: "supervisord"
-        state: "started"
         enabled: true
 
     - name: copy supervisord configuration

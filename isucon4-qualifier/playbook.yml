@@ -1,5 +1,10 @@
 ---
 
+# TODO
+# - replace sudo with become
+# - parameterise
+# - go doesn't build
+
 - name: 00_devel
   import_playbook: 00_devel.yml
 
