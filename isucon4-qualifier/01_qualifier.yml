@@ -2,11 +2,28 @@
 
 - hosts: all
   become: yes
+  vars:
+    isucon:
+      username: "isucon"
+      group: "wheel"
+    repo_packages:
+      - "http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm"
+    packages:
+      - "nginx"
+      - "mysql-community-server"
+      - "MySQL-python"
+      - "git"
+    git_repo: "https://github.com/isucon/isucon4.git"
+    workdir: "/tmp/isucon/"
+    mysql:
+      username: "{{ isucon.username }}"
+      password: "{{ isucon.username }}"
+
   tasks:
     - name: create an isucon user
       user:
-        name: "isucon"
-        groups: "wheel"
+        name: "{{ isucon.username }}"
+        groups: "{{ isucon.group }}"
 
     - name: add the isucon user as a sudoer
       lineinfile:
@@ -23,23 +40,14 @@
 
     - name: install repo packages
       yum:
-        name: "{{ packages }}"
+        name: "{{ repo_packages }}"
         state: "installed"
-      vars:
-        packages:
-          - "http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm"
 
     - name: install packages
       yum:
         name: "{{ packages }}"
         state: "installed"
-      vars:
-        packages:
-          - "nginx"
-          - "mysql-community-server"
-          - "MySQL-python"
-          - "git"
-    
+
     - name: start nginx
       service:
         name: "nginx"
@@ -54,7 +62,7 @@
     
     - name: clone the repository
       git:
-        repo: "https://github.com/isucon/isucon4.git"
+        repo: "{{ git_repo }}"
         dest: "/tmp/isucon4"
 
     - name: copy the nginx.conf file
@@ -70,58 +78,58 @@
       notify:
         - restart mysqld
 
-    - name: remove the /tmp/isucon/ directory
+    - name: remove the {{ workdir }} directory
       file:
-        path: "/tmp/isucon/"
+        path: "{{ workdir }}"
         state: "absent"
 
-    - name: create /tmp/isucon/ directory
+    - name: create {{ workdir }} directory
       file:
-        path: "/tmp/isucon"
+        path: "{{ workdir }}"
         state: "directory"
-        owner: "isucon"
-        group: "isucon"
+        owner: "{{ isucon.username }}"
+        group: "{{ isucon.username }}"
 
-    - name: copy the sql files in /tmp/isucon/
-      become_user: "isucon"
-      shell: rsync -a /tmp/isucon4/qualifier/sql /tmp/isucon/
+    - name: copy the sql files in {{ workdir }}
+      become_user: "{{ isucon.username }}"
+      shell: rsync -a /tmp/isucon4/qualifier/sql {{ workdir }}
 
-    - name: copy the webapp directory in /tmp/isucon/
-      become_user: "isucon"
-      shell: rsync -a /tmp/isucon4/qualifier/webapp /tmp/isucon/
+    - name: copy the webapp directory in {{ workdir }}
+      become_user: "{{ isucon.username }}"
+      shell: rsync -a /tmp/isucon4/qualifier/webapp {{ workdir }}
 
-    - name: copy the init.sh file in /tmp/isucon/
-      become_user: "isucon"
+    - name: copy the init.sh file in {{ workdir }}
+      become_user: "{{ isucon.username }}"
       shell: |
-        cp /tmp/isucon4/qualifier/init.sh /tmp/isucon/init.sh
-        chmod a+x /tmp/isucon/init.sh
+        cp /tmp/isucon4/qualifier/init.sh {{ workdir }}init.sh
+        chmod a+x {{ workdir }}init.sh
 
-    - name: copy the env.sh file in /tmp/isucon/
-      become_user: "isucon"
+    - name: copy the env.sh file in {{ workdir }}
+      become_user: "{{ isucon.username }}"
       shell: |
-        cp /tmp/isucon4/qualifier/ami/files/env.sh /tmp/isucon/env.sh
-        chmod a+x /tmp/isucon/env.sh
+        cp /tmp/isucon4/qualifier/ami/files/env.sh {{ workdir }}env.sh
+        chmod a+x {{ workdir }}env.sh
 
     - name: copy the bashrc file in /home/isucon/
-      become_user: "isucon"
+      become_user: "{{ isucon.username }}"
       shell: |
         cp /tmp/isucon4/qualifier/ami/files/bashrc /home/isucon/.bashrc
         chmod a+x /home/isucon/.bashrc
 
-    - name: copy the /tmp/isucon/ into /home/isucon/
-      command: rsync -avz --delete --exclude-from=/tmp/isucon4/qualifier/ami/files/rsync_exclude.txt /tmp/isucon/ /home/isucon/
+    - name: copy the {{ workdir }} into /home/isucon/
+      command: rsync -avz --delete --exclude-from=/tmp/isucon4/qualifier/ami/files/rsync_exclude.txt {{ workdir }} /home/isucon/
 
   post_tasks:
     - name: run init.sh
       command: ./init.sh
-      become_user: isucon
+      become_user: "{{ isucon.username }}"
       args:
         chdir: /home/isucon
 
-    - name: create an isucon MySQL user
+    - name: create a MySQL user
       mysql_user:
-        name: "isucon"
-        password: "isucon"
+        name: "{{ mysql.username }}"
+        password: "{{ mysql.password }}"
         priv: "*.*:ALL"
         state: "present"
 

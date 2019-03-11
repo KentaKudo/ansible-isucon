@@ -4,7 +4,7 @@
 API_VERSION   = "2"
 BOX_NAME      = "bento/centos-6.7"
 MEMORY_SIZE   = "2048"
-PLAYBOOK_PATH = "05_benchmarker.yml"
+PLAYBOOK_PATH = "01_qualifier.yml"
 
 Vagrant.configure(API_VERSION) do |config|
     config.vm.box = BOX_NAME

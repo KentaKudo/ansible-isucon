@@ -1,7 +1,6 @@
 ---
 
 # TODO
-# - replace sudo with become
 # - parameterise
 # - go doesn't build
 
