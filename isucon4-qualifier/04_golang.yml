@@ -3,7 +3,7 @@
 - hosts: all
   become: yes
   vars:
-    go_version: "1.3"
+    go_version: "1.11"
     gondler_version: "0.2.0"
     isucon:
       username: "isucon"
@@ -25,6 +25,7 @@
         src: "https://dl.google.com/go/go{{ go_version }}.linux-amd64.tar.gz"
         dest: "/usr/local/"
         remote_src: yes
+        creates: "/usr/local/go/"
 
     - name: copy the golang.sh file
       shell: cp /tmp/isucon4/qualifier/ami/files/golang.sh /etc/profile.d/golang.sh
@@ -43,6 +44,6 @@
       file:
         path: "/home/isucon/gocode"
         state: "directory"
-        owner: "{{ isucon.user }}"
+        owner: "{{ isucon.username }}"
         group: "{{ isucon.group }}"
         recurse: yes

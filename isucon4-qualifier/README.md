@@ -38,7 +38,8 @@ $ vagrant up
 - nginxのバージョンを1.6.1からstable最新版に変更しています
 - ログインユーザをec2-userからvagrantに変更しています
 - ベンチマークプログラムのインスタンスチェックを削除しています
-- Use Ruby 2.3.3 instead of 2.1.3 which finished its support. NOTE: I haven't checked apprecation behaviours with this change.
+- Ruby 2.3.3 instead of 2.1.3 which finished its support. NOTE: I haven't checked apprecation behaviours with this change.
+- Go1.1 instead of Go1.3.
 
 ## References
 
