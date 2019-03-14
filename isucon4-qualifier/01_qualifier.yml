@@ -13,7 +13,7 @@
       - "mysql-community-server"
       - "MySQL-python"
       - "git"
-    git_repo: "https://github.com/isucon/isucon4.git"
+    git_repo: "https://github.com/KentaKudo/isucon4.git"
     workdir: "/tmp/isucon/"
     mysql:
       username: "{{ isucon.username }}"

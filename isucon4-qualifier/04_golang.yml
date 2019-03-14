@@ -3,7 +3,7 @@
 - hosts: all
   become: yes
   vars:
-    go_version: "1.11"
+    go_version: "1.12"
     gondler_version: "0.2.0"
     isucon:
       username: "isucon"

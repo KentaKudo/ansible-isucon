@@ -24,28 +24,6 @@
         group: "{{ isucon.group }}"
         recurse: yes
 
-    - name: edit the Makefile
-      lineinfile:
-        dest: "/tmp/benchmarker/Makefile"
-        state: "present"
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.replace }}"
-      with_items:
-        - { regexp: '^GIT_COMMIT=.*', replace: 'GIT_COMMIT=""' }
-        - { regexp: '-X main\.GIT_COMMIT \\"\$\{GIT_COMMIT\}\\" \\', replace: '        -X main.GIT_COMMIT=${GIT_COMMIT} \' }
-        - { regexp: '-X github\.com/isucon/isucon4/qualifier/benchmarker/user\.DummyUsersTSVMD5 \\"\$\{DUTMH\}\\" \\', replace: '        -X github.com/isucon/isucon4/qualifier/benchmarker/user.DummyUsersTSVMD5=${DUTMH} \'}
-        - { regexp: '-X github\.com/isucon/isucon4/qualifier/benchmarker/user\.DummyUsersUsedTSVMD5 \\"\$\{DUUTMH\}\\" \\', replace: '        -X github.com/isucon/isucon4/qualifier/benchmarker/user.DummyUsersUsedTSVMD5=${DUUTMH} \' }
-        - { regexp: '-X github\.com/isucon/isucon4/qualifier/benchmarker/user\.DebugMode \\"\$\{debugmode\}\\" \\', replace: '        -X github.com/isucon/isucon4/qualifier/benchmarker/user.DebugMode=${debugmode} \' }
-        - { regexp: '-X main\.DebugMode \\"\$\{debugmode\}\\" \\', replace: '        -X main.DebugMode=${debugmode} \' }
-        - { regexp: '-X main\.SkipMetadataMode \\"\$\{skipmetadata\}\\"', replace: '        -X main.SkipMetadataMode=${skipmetadata}' }
-
-    - name: remove the machine type check in main.go
-      lineinfile:
-        dest: "/tmp/benchmarker/main.go"
-        state: "present"
-        regexp: 'checkInstanceMetadata\(\)'
-        line: ''
-
     - name: build benchmarker
       command: /home/isucon/env.sh make release
       become_user: "{{ isucon.username }}"
