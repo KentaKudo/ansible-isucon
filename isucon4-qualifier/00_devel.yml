@@ -5,6 +5,7 @@
     repo_packages:
       - "epel-release"
       - "http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm"
+      - "http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm" # for git 2.x
     packages:
       - "libselinux-python"
       - "python-meld3"
